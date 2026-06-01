@@ -32,6 +32,10 @@ Procedurally generated background borders (the calendar grid is overlaid on top 
 | --- | --- | --- |
 | ![Pastel border](docs/samples/sample-bg-pastel.png) | ![Tropical border](docs/samples/sample-bg-tropical.png) | ![Monochrome-green border](docs/samples/sample-bg-monochrome-green.png) |
 
+## Mac / iOS app
+
+A multiplatform SwiftUI app that wraps these scripts lives in [`CalendarApp/`](CalendarApp/). Open `CalendarApp/CalendarApp.xcodeproj` and run on Mac, iPhone, or iPad. Bundle id `dollar2048.calendar-generator`.
+
 ## Requirements
 
 - macOS with Swift toolchain (`swift` on `PATH`)

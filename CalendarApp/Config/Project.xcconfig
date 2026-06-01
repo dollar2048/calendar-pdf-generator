@@ -1,0 +1,11 @@
+// Base build settings for the CalendarApp target.
+//
+// Local signing details (DEVELOPMENT_TEAM, etc.) live in Signing.xcconfig,
+// which is gitignored. Copy Signing.template.xcconfig to Signing.xcconfig
+// and fill in your team ID — or skip it and Xcode will prompt you to pick a
+// team on first build.
+//
+// CI builds disable signing entirely via xcodebuild flags, so they don't
+// need Signing.xcconfig.
+
+#include? "Signing.xcconfig"

@@ -1,0 +1,5 @@
+// Copy this file to `Signing.xcconfig` (sibling, not committed) and fill in
+// your Apple Developer Team ID. Find it at https://developer.apple.com/account
+// → Membership. Looks like 10 alphanumeric characters, e.g. ABCD1E2F3G.
+
+DEVELOPMENT_TEAM = YOUR_TEAM_ID

@@ -107,3 +107,30 @@ backgrounds/
 
 # Generated calendar PDFs — regenerate via `swift generate_calendar_pdf.swift`
 *-calendar-A4-landscape*.pdf
+
+# Mac app build output (regenerate via `CalendarApp/build_app.sh`)
+CalendarApp/dist/
+
+# Local signing config (Team ID stays out of public repo)
+CalendarApp/Config/Signing.xcconfig
+
+# Apple developer secrets — never commit
+*.p12
+*.p8
+*.cer
+*.mobileprovision
+*.provisionprofile
+*.certSigningRequest
+*.developerprofile
+ExportOptions.plist
+
+# Generic secrets / env files
+.env
+.env.*
+!.env.example
+*.secret
+*.secrets
+secrets.xcconfig
+**/Secrets.xcconfig
+GoogleService-Info.plist
+fastlane/.env
