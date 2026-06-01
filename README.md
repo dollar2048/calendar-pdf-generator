@@ -2,6 +2,20 @@
 
 Generates printable A4 landscape monthly calendars in PDF, with a floral border background and white day cells.
 
+## Samples
+
+Calendar pages — three different backgrounds for the same month:
+
+| Vibrant | Spring | Autumn |
+| --- | --- | --- |
+| ![Vibrant calendar](docs/samples/sample-calendar-vibrant.png) | ![Spring calendar](docs/samples/sample-calendar-spring.png) | ![Autumn calendar](docs/samples/sample-calendar-autumn.png) |
+
+Procedurally generated background borders (the calendar grid is overlaid on top of these):
+
+| Vibrant | Spring | Autumn |
+| --- | --- | --- |
+| ![Vibrant border](docs/samples/sample-bg-vibrant.png) | ![Spring border](docs/samples/sample-bg-spring.png) | ![Autumn border](docs/samples/sample-bg-autumn.png) |
+
 ## Requirements
 
 - macOS with Swift toolchain (`swift` on `PATH`)

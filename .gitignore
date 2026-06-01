@@ -99,3 +99,11 @@ Music_Tracks
 Not_Git/
 # ignore gitpmoji directory
 gitpmoji
+
+# Calendar generator artifacts
+
+# Generated background pool — regenerate via `swift generate_backgrounds.swift`
+backgrounds/
+
+# Generated calendar PDFs — regenerate via `swift generate_calendar_pdf.swift`
+*-calendar-A4-landscape*.pdf
