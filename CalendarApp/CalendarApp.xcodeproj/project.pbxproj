@@ -140,6 +140,7 @@
 				AF01000000000000000001 /* Sources */,
 				AF01000000000000000003 /* Frameworks */,
 				AF01000000000000000002 /* Resources */,
+				AF01000000000000000004 /* Inject top-level CFBundleIconName */,
 			);
 			buildRules = (
 			);
@@ -182,6 +183,28 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		AF01000000000000000004 /* Inject top-level CFBundleIconName */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Inject top-level CFBundleIconName";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -e\nPLIST=\"${TARGET_BUILD_DIR}/${INFOPLIST_PATH}\"\nif [[ -f \"$PLIST\" ]]; then\n  /usr/libexec/PlistBuddy -c \"Add :CFBundleIconName string AppIcon\" \"$PLIST\" 2>/dev/null \\\n    || /usr/libexec/PlistBuddy -c \"Set :CFBundleIconName AppIcon\" \"$PLIST\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXResourcesBuildPhase section */
 		AF01000000000000000002 /* Resources */ = {
@@ -344,6 +367,8 @@
 			baseConfigurationReference = AB01000000000000000014 /* Project.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -363,7 +388,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]" = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "dollar2048.calendar-generator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -381,6 +406,8 @@
 			baseConfigurationReference = AB01000000000000000014 /* Project.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
+				INFOPLIST_KEY_CFBundleIconName = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -400,7 +427,7 @@
 				"LD_RUNPATH_SEARCH_PATHS[sdk=iphonesimulator*]" = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = "dollar2048.calendar-generator";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
