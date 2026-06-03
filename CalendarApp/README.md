@@ -1,6 +1,6 @@
 # Calendar Generator — Mac/iOS App
 
-Multiplatform SwiftUI app that wraps the calendar PDF generator. Pick a month and year, browse all 9 palettes as live previews, tap one to see it full size and save or share the PDF.
+Multiplatform SwiftUI app that wraps the calendar PDF generator. Pick a month and year, browse all 10 palettes as live previews, shuffle the floral arrangement, import your own background, tap one to see it full size and save or share the PDF.
 
 ## Open
 
@@ -52,6 +52,8 @@ CI builds disable signing entirely (`CODE_SIGN_IDENTITY=-`, `CODE_SIGNING_REQUIR
 ## Features
 
 - Gallery of all palettes generated on the fly (no precomputed assets shipped with the app).
+- **Shuffle** re-rolls the procedural floral border into a new random arrangement.
+- **Add your own** imports a background image (Photos on iOS, file picker on macOS) rendered full-bleed behind the grid.
 - Month / year header in a single, sticky toolbar.
 - PDF preview powered by PDFKit.
 - macOS: **Save PDF…** writes to a chosen location via `NSSavePanel`.
@@ -66,7 +68,7 @@ CalendarApp/
     ├── CalendarAppApp.swift           — @main entry
     ├── Models/
     │   ├── CalendarSpec.swift         — month/year value type
-    │   └── Palette.swift              — 9 palette definitions
+    │   └── Palette.swift              — 10 palette definitions + CalendarBackground
     ├── Drawing/
     │   ├── PlatformBridge.swift       — UColor/UFont/UImage typealiases
     │   ├── BackgroundRenderer.swift   — procedural floral border (CGContext only)

@@ -12,7 +12,7 @@ enum CalendarPDFRenderer {
     static let pageWidth = BackgroundRenderer.pageWidth
     static let pageHeight = BackgroundRenderer.pageHeight
 
-    static func renderPDFData(spec: CalendarSpec, palette: Palette) -> Data? {
+    static func renderPDFData(spec: CalendarSpec, background: CalendarBackground) -> Data? {
         let pdfData = NSMutableData()
         guard let consumer = CGDataConsumer(data: pdfData) else { return nil }
         var mediaBox = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
@@ -22,7 +22,7 @@ enum CalendarPDFRenderer {
         context.setFillColor(UColor.white.cgColor)
         context.fill(mediaBox)
 
-        BackgroundRenderer.render(palette: palette, into: context, rect: mediaBox)
+        drawBackground(background, into: context, rect: mediaBox)
 
         drawTitleAndGrid(spec: spec, in: context)
 
@@ -31,7 +31,40 @@ enum CalendarPDFRenderer {
         return pdfData as Data
     }
 
-    static func renderPreviewImage(spec: CalendarSpec, palette: Palette, scale: CGFloat = 1.5) -> CGImage? {
+    /// Draws the chosen background: procedural palette border, or a user image
+    /// scaled to fill the page (aspect-fill, centered, clipped to the page).
+    private static func drawBackground(_ background: CalendarBackground, into ctx: CGContext, rect: CGRect) {
+        switch background {
+        case let .palette(palette, variation):
+            BackgroundRenderer.render(palette: palette, variation: variation, into: ctx, rect: rect)
+        case let .custom(custom):
+            drawAspectFill(custom.image, into: ctx, rect: rect)
+        }
+    }
+
+    private static func drawAspectFill(_ image: CGImage, into ctx: CGContext, rect: CGRect) {
+        ctx.saveGState()
+        ctx.setFillColor(UColor.white.cgColor)
+        ctx.fill(rect)
+
+        let iw = CGFloat(image.width)
+        let ih = CGFloat(image.height)
+        guard iw > 0, ih > 0 else { ctx.restoreGState(); return }
+
+        let scale = max(rect.width / iw, rect.height / ih)
+        let drawSize = CGSize(width: iw * scale, height: ih * scale)
+        let drawRect = CGRect(
+            x: rect.midX - drawSize.width / 2,
+            y: rect.midY - drawSize.height / 2,
+            width: drawSize.width,
+            height: drawSize.height
+        )
+        ctx.clip(to: rect)
+        ctx.draw(image, in: drawRect)
+        ctx.restoreGState()
+    }
+
+    static func renderPreviewImage(spec: CalendarSpec, background: CalendarBackground, scale: CGFloat = 1.5) -> CGImage? {
         let width = Int(pageWidth * scale)
         let height = Int(pageHeight * scale)
         guard let colorSpace = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
@@ -46,9 +79,10 @@ enum CalendarPDFRenderer {
         ) else { return nil }
 
         ctx.scaleBy(x: scale, y: scale)
+        let pageRect = CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight)
         ctx.setFillColor(UColor.white.cgColor)
-        ctx.fill(CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight))
-        BackgroundRenderer.render(palette: palette, into: ctx, rect: CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight))
+        ctx.fill(pageRect)
+        drawBackground(background, into: ctx, rect: pageRect)
         drawTitleAndGrid(spec: spec, in: ctx)
 
         return ctx.makeImage()

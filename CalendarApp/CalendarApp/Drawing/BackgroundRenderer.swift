@@ -175,8 +175,13 @@ enum BackgroundRenderer {
         ctx.strokePath()
     }
 
-    static func render(palette: Palette, into ctx: CGContext, rect: CGRect) {
-        var rng = SeededRNG(seed: UInt64(abs(palette.id.hashValue)) | 1)
+    /// Renders the procedural floral border. `variation` re-rolls the layout:
+    /// variation 0 reproduces the original fixed arrangement for each palette,
+    /// higher values shuffle stems/flowers/berries while keeping the palette colors.
+    static func render(palette: Palette, variation: Int = 0, into ctx: CGContext, rect: CGRect) {
+        let baseSeed = UInt64(abs(palette.id.hashValue)) | 1
+        let seed = baseSeed &+ UInt64(bitPattern: Int64(variation)) &* 7919
+        var rng = SeededRNG(seed: seed)
 
         ctx.saveGState()
         ctx.setFillColor(UColor.white.cgColor)

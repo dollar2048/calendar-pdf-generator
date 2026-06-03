@@ -86,6 +86,13 @@ let palettes: [Palette] = [
         flowerColors: [rgb(200, 220, 140), rgb(230, 240, 180), rgb(170, 200, 100)],
         berryColors: [rgb(70, 110, 55), rgb(130, 165, 70)],
         accentColors: [rgb(110, 145, 70), rgb(160, 185, 90)]
+    ),
+    Palette(
+        name: "winter",
+        leafColors: [rgb(55, 105, 90), rgb(35, 80, 70), rgb(110, 150, 140), rgb(150, 185, 180), rgb(80, 130, 120)],
+        flowerColors: [rgb(240, 248, 252), rgb(205, 226, 240), rgb(255, 255, 255), rgb(186, 210, 230)],
+        berryColors: [rgb(198, 40, 50), rgb(168, 28, 44), rgb(224, 72, 70)],
+        accentColors: [rgb(118, 158, 198), rgb(180, 202, 222), rgb(86, 126, 168)]
     )
 ]
 

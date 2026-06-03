@@ -3,7 +3,7 @@ import UniformTypeIdentifiers
 
 struct DetailView: View {
     let spec: CalendarSpec
-    let palette: Palette
+    let background: CalendarBackground
 
     @Environment(\.dismiss) private var dismiss
     @State private var pdfData: Data?
@@ -11,7 +11,7 @@ struct DetailView: View {
     @State private var showSaveSuccess = false
 
     private var fileBaseName: String {
-        "\(spec.monthName)-\(spec.year)-calendar-\(palette.id)"
+        "\(spec.monthName)-\(spec.year)-calendar-\(background.fileStem)"
     }
 
     var body: some View {
@@ -29,23 +29,15 @@ struct DetailView: View {
     }
 
     private var paletteKey: String {
-        "\(palette.id)-\(spec.month)-\(spec.year)"
+        "\(background.id)-\(spec.month)-\(spec.year)"
     }
 
     private var toolbar: some View {
         HStack(spacing: 12) {
-            Button {
-                dismiss()
-            } label: {
-                Label("Close", systemImage: "xmark.circle.fill")
-            }
-            .labelStyle(.iconOnly)
-            .buttonStyle(.plain)
-
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(spec.monthName) \(spec.year)")
                     .font(.headline)
-                Text(palette.displayName)
+                Text(background.displayName)
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
             }
@@ -67,6 +59,15 @@ struct DetailView: View {
             }
             .disabled(pdfData == nil)
             #endif
+
+            // Close on the trailing edge per Apple HIG.
+            Button {
+                dismiss()
+            } label: {
+                Label("Close", systemImage: "xmark.circle.fill")
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.plain)
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
@@ -92,10 +93,10 @@ struct DetailView: View {
     @MainActor
     private func regenerate() async {
         let snapshotSpec = spec
-        let snapshotPalette = palette
+        let snapshotBackground = background
         pdfData = nil
         let data = await Task.detached(priority: .userInitiated) {
-            CalendarPDFRenderer.renderPDFData(spec: snapshotSpec, palette: snapshotPalette)
+            CalendarPDFRenderer.renderPDFData(spec: snapshotSpec, background: snapshotBackground)
         }.value
         pdfData = data
     }

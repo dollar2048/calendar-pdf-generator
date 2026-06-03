@@ -1,6 +1,14 @@
 # Calendar PDF Generator
 
-Generates printable A4 landscape monthly calendars in PDF, with a floral border background and white day cells.
+Generates printable A4 landscape monthly calendars in PDF, with a floral border background and white day cells. Ships as command-line Swift scripts **and** a multiplatform SwiftUI app for Mac, iPhone, and iPad.
+
+## The app
+
+| iPhone | Mac |
+| --- | --- |
+| <img src="docs/screenshots/app-ios.png" alt="Calendar Generator on iPhone" width="280"> | <img src="docs/screenshots/app-macos.png" alt="Calendar Generator on Mac" width="520"> |
+
+Browse every palette as a live preview, shuffle the floral arrangement, import your own background image, pick any month and year, then save or share the PDF. See [Mac / iOS app](#mac--ios-app) to download.
 
 ## Samples
 
@@ -34,7 +42,26 @@ Procedurally generated background borders (the calendar grid is overlaid on top 
 
 ## Mac / iOS app
 
-A multiplatform SwiftUI app that wraps these scripts lives in [`CalendarApp/`](CalendarApp/). Open `CalendarApp/CalendarApp.xcodeproj` and run on Mac, iPhone, or iPad. Bundle id `dollar2048.calendar-generator`.
+A multiplatform SwiftUI app that wraps these scripts lives in [`CalendarApp/`](CalendarApp/). Bundle id `dollar2048.calendar-generator`. Requires macOS 14 / iOS 17 or later.
+
+App features:
+
+- Gallery of every palette rendered live (no precomputed assets).
+- **Shuffle** button re-rolls the floral border into a fresh random arrangement.
+- **Add your own** background image — pick from Photos (iOS) or a file (Mac); it fills the page behind the grid.
+- Month + year picker; save (Mac) or share (iOS) the resulting PDF.
+
+### Install on macOS
+
+1. Download `CalendarApp-macOS.zip` from the [**latest release**](https://github.com/dollar2048/calendar/releases/latest).
+2. Unzip and drag `CalendarApp.app` to `/Applications`.
+3. First launch: the build is ad-hoc signed (not notarized), so macOS Gatekeeper will warn. **Right-click the app → Open → Open** to launch it once; afterwards it opens normally.
+
+If no release is listed yet, build it yourself — see [`CalendarApp/README.md`](CalendarApp/README.md).
+
+### Build from source
+
+Open `CalendarApp/CalendarApp.xcodeproj` in Xcode and run on **My Mac**, an **iPhone/iPad** simulator, or a device.
 
 ## Requirements
 
@@ -126,12 +153,13 @@ Available palettes:
 - `pastel` — sage, blush, lavender, cream
 - `tropical` — deep greens with magenta and teal accents
 - `monochrome-green` — botanical greens only
+- `winter` — frosted evergreens, icy whites/blues, holly-red berries
 
 Each background draws stems, leaves, flowers, and berry clusters along the four page borders, leaving the center white so the calendar grid sits cleanly on top.
 
 ## Customizing
 
 - **Add new palettes**: append a `Palette` to the `palettes` array in `generate_backgrounds.swift`.
-- **Use your own images**: drop PNG/JPG files into `backgrounds/`. They'll be picked up automatically.
+- **Use your own images**: drop PNG/JPG files into `backgrounds/` (scripts pick them up automatically), or in the app tap **Add your own** to import one.
 - **Layout tweaks**: margins, cell sizes, fonts, and colors are constants near the top of `generate_calendar_pdf.swift`.
 - **Locale / week start**: weekday names and Monday-based start are hard-coded in `generate_calendar_pdf.swift`. Change the `weekdayNames` array and `mondayBasedOffset` calculation if you need a different layout.

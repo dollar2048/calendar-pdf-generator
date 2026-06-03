@@ -86,6 +86,58 @@ enum Palettes {
             flowerColors: [.rgb255(200, 220, 140), .rgb255(230, 240, 180), .rgb255(170, 200, 100)],
             berryColors: [.rgb255(70, 110, 55), .rgb255(130, 165, 70)],
             accentColors: [.rgb255(110, 145, 70), .rgb255(160, 185, 90)]
+        ),
+        Palette(
+            id: "winter",
+            displayName: "Winter",
+            leafColors: [.rgb255(55, 105, 90), .rgb255(35, 80, 70), .rgb255(110, 150, 140), .rgb255(150, 185, 180), .rgb255(80, 130, 120)],
+            flowerColors: [.rgb255(240, 248, 252), .rgb255(205, 226, 240), .rgb255(255, 255, 255), .rgb255(186, 210, 230)],
+            berryColors: [.rgb255(198, 40, 50), .rgb255(168, 28, 44), .rgb255(224, 72, 70)],
+            accentColors: [.rgb255(118, 158, 198), .rgb255(180, 202, 222), .rgb255(86, 126, 168)]
         )
     ]
+}
+
+/// A chosen background for a calendar page: either one of the built-in
+/// procedural palettes (with a re-rollable variation seed) or a user-supplied image.
+enum CalendarBackground: Identifiable, Hashable {
+    case palette(Palette, variation: Int)
+    case custom(CustomBackground)
+
+    var id: String {
+        switch self {
+        case let .palette(palette, variation): "\(palette.id)#\(variation)"
+        case let .custom(custom): "custom-\(custom.id.uuidString)"
+        }
+    }
+
+    var displayName: String {
+        switch self {
+        case let .palette(palette, _): palette.displayName
+        case .custom: "My Background"
+        }
+    }
+
+    /// Filename-safe stem used when exporting the PDF.
+    var fileStem: String {
+        switch self {
+        case let .palette(palette, _): palette.id
+        case .custom: "custom"
+        }
+    }
+}
+
+/// A user-imported background image. Identity is the UUID so the enum stays
+/// Hashable without hashing pixel data; the CGImage rides along for rendering.
+struct CustomBackground: Identifiable, Hashable {
+    let id: UUID
+    let image: CGImage
+
+    init(id: UUID = UUID(), image: CGImage) {
+        self.id = id
+        self.image = image
+    }
+
+    static func == (lhs: CustomBackground, rhs: CustomBackground) -> Bool { lhs.id == rhs.id }
+    func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }

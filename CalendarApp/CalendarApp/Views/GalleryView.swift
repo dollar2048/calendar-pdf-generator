@@ -2,23 +2,33 @@ import SwiftUI
 
 struct GalleryView: View {
     @State private var spec = CalendarSpec.current
-    @State private var selectedPalette: Palette? = nil
+    @State private var variation = 0
+    @State private var customBackground: CustomBackground?
+    @State private var selection: CalendarBackground?
+    @State private var showDatePopover = false
 
     private let columns: [GridItem] = [
         GridItem(.adaptive(minimum: 260, maximum: 360), spacing: 18)
     ]
+
+    private var paletteBackgrounds: [CalendarBackground] {
+        Palettes.all.map { .palette($0, variation: variation) }
+    }
 
     var body: some View {
         #if os(macOS)
         macContent
         #else
         NavigationStack {
-            iosContent
+            grid
                 .navigationTitle("\(spec.monthName) \(String(spec.year))")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
+                    ToolbarItem(placement: .topBarLeading) {
+                        shuffleButton
+                    }
                     ToolbarItem(placement: .topBarTrailing) {
-                        monthYearMenu
+                        dateButton
                     }
                 }
         }
@@ -32,6 +42,7 @@ struct GalleryView: View {
                 Text("Calendar Generator")
                     .font(.title2.weight(.semibold))
                 Spacer()
+                shuffleButton
                 monthPicker
                 yearStepper
             }
@@ -44,25 +55,82 @@ struct GalleryView: View {
         .frame(minWidth: 900, minHeight: 600)
     }
 
-    @ViewBuilder
-    private var iosContent: some View {
-        grid
-    }
-
     private var grid: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 18) {
-                ForEach(Palettes.all) { palette in
-                    PaletteCard(spec: spec, palette: palette)
-                        .onTapGesture { selectedPalette = palette }
+                ForEach(paletteBackgrounds) { background in
+                    Button {
+                        selection = background
+                    } label: {
+                        PaletteCard(spec: spec, background: background)
+                    }
+                    .buttonStyle(.plain)
                 }
+
+                AddBackgroundCard(
+                    spec: spec,
+                    custom: customBackground,
+                    onPicked: { cgImage in
+                        let new = CustomBackground(image: cgImage)
+                        customBackground = new
+                        selection = .custom(new)
+                    },
+                    onOpen: {
+                        if let customBackground { selection = .custom(customBackground) }
+                    },
+                    onRemove: { customBackground = nil }
+                )
             }
             .padding(20)
         }
-        .sheet(item: $selectedPalette) { palette in
-            DetailView(spec: spec, palette: palette)
+        .sheet(item: $selection) { background in
+            DetailView(spec: spec, background: background)
         }
     }
+
+    // MARK: - Controls
+
+    private var shuffleButton: some View {
+        Button {
+            variation += 1
+        } label: {
+            Label("Shuffle backgrounds", systemImage: "shuffle")
+        }
+        .labelStyle(.iconOnly)
+    }
+
+    #if os(iOS)
+    private var dateButton: some View {
+        Button {
+            showDatePopover = true
+        } label: {
+            Label("Month and Year", systemImage: "calendar")
+        }
+        .popover(isPresented: $showDatePopover) {
+            datePopover
+                .presentationCompactAdaptation(.popover)
+        }
+    }
+
+    private var datePopover: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            LabeledContent("Month") {
+                Picker("Month", selection: $spec.month) {
+                    ForEach(1...12, id: \.self) { m in
+                        Text(monthName(m)).tag(m)
+                    }
+                }
+                .labelsHidden()
+            }
+
+            Stepper(value: $spec.year, in: 1900...2999) {
+                LabeledContent("Year", value: String(spec.year))
+            }
+        }
+        .padding(20)
+        .frame(minWidth: 260)
+    }
+    #endif
 
     private var monthPicker: some View {
         Picker("Month", selection: $spec.month) {
@@ -90,28 +158,6 @@ struct GalleryView: View {
                 .frame(minWidth: 56, alignment: .leading)
         }
         .fixedSize()
-    }
-
-    private var monthYearMenu: some View {
-        Menu {
-            Picker("Month", selection: $spec.month) {
-                ForEach(1...12, id: \.self) { m in
-                    Text(monthName(m)).tag(m)
-                }
-            }
-            Picker("Year", selection: $spec.year) {
-                ForEach(yearRange, id: \.self) { y in
-                    Text(verbatim: String(y)).tag(y)
-                }
-            }
-        } label: {
-            Label("Month and Year", systemImage: "calendar")
-        }
-    }
-
-    private var yearRange: [Int] {
-        let center = spec.year
-        return Array((center - 5)...(center + 10))
     }
 
     private func monthName(_ m: Int) -> String {
