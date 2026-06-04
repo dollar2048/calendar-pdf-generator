@@ -256,6 +256,77 @@ func placeOnBorder(edge: Edge, t: CGFloat, depth: CGFloat) -> CGPoint {
     }
 }
 
+func drawSnowflake(at p: CGPoint, radius: CGFloat, rotation: CGFloat, color: NSColor, in ctx: CGContext) {
+    ctx.saveGState()
+    ctx.translateBy(x: p.x, y: p.y)
+    ctx.rotate(by: rotation)
+    ctx.setStrokeColor(color.cgColor)
+    ctx.setLineWidth(max(1.1, radius * 0.10))
+    ctx.setLineCap(.round)
+
+    for i in 0..<6 {
+        let a = CGFloat(i) * .pi / 3
+        ctx.move(to: .zero)
+        ctx.addLine(to: CGPoint(x: cos(a) * radius, y: sin(a) * radius))
+
+        let b1 = a + .pi / 6
+        let b2 = a - .pi / 6
+        let inner = CGPoint(x: cos(a) * radius * 0.55, y: sin(a) * radius * 0.55)
+        let innerLen = radius * 0.32
+        ctx.move(to: inner)
+        ctx.addLine(to: CGPoint(x: inner.x + cos(b1) * innerLen, y: inner.y + sin(b1) * innerLen))
+        ctx.move(to: inner)
+        ctx.addLine(to: CGPoint(x: inner.x + cos(b2) * innerLen, y: inner.y + sin(b2) * innerLen))
+        let outer = CGPoint(x: cos(a) * radius * 0.8, y: sin(a) * radius * 0.8)
+        let outerLen = radius * 0.22
+        ctx.move(to: outer)
+        ctx.addLine(to: CGPoint(x: outer.x + cos(b1) * outerLen, y: outer.y + sin(b1) * outerLen))
+        ctx.move(to: outer)
+        ctx.addLine(to: CGPoint(x: outer.x + cos(b2) * outerLen, y: outer.y + sin(b2) * outerLen))
+    }
+    ctx.strokePath()
+
+    let centerR = radius * 0.13
+    ctx.setFillColor(color.cgColor)
+    ctx.fillEllipse(in: CGRect(x: -centerR, y: -centerR, width: centerR * 2, height: centerR * 2))
+    ctx.restoreGState()
+}
+
+func renderSnow(palette: Palette, rng: inout SeededRNG, in ctx: CGContext) {
+    ctx.setFillColor(rgb(226, 238, 248).cgColor)
+    ctx.fill(CGRect(x: 0, y: 0, width: pageWidth, height: pageHeight))
+
+    let flakeColors = palette.flowerColors + palette.accentColors
+    let edges: [Edge] = [.top, .bottom, .left, .right]
+    let borderDepthMax: CGFloat = 155
+
+    for edge in edges {
+        let count = Int(randRange(&rng, 14, 22))
+        for _ in 0..<count {
+            let t = randUnit(&rng)
+            let depth = randRange(&rng, 10, borderDepthMax)
+            let pos = placeOnBorder(edge: edge, t: t, depth: depth)
+            drawSnowflake(
+                at: pos,
+                radius: randRange(&rng, 9, 26),
+                rotation: randRange(&rng, 0, .pi),
+                color: pick(flakeColors, &rng),
+                in: ctx
+            )
+        }
+    }
+
+    let dots = 320
+    for _ in 0..<dots {
+        let x = randRange(&rng, 0, pageWidth)
+        let y = randRange(&rng, 0, pageHeight)
+        let r = randRange(&rng, 0.8, 2.8)
+        let alpha = randRange(&rng, 0.55, 1.0)
+        ctx.setFillColor(NSColor(calibratedWhite: 1, alpha: alpha).cgColor)
+        ctx.fillEllipse(in: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2))
+    }
+}
+
 func renderBackground(palette: Palette, seed: UInt64) -> Data? {
     var rng = SeededRNG(seed: seed)
 
@@ -277,6 +348,15 @@ func renderBackground(palette: Palette, seed: UInt64) -> Data? {
     let nsCtx = NSGraphicsContext(cgContext: ctx, flipped: false)
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = nsCtx
+
+    // Winter is a snow scene rather than a floral border.
+    if palette.name == "winter" {
+        renderSnow(palette: palette, rng: &rng, in: ctx)
+        NSGraphicsContext.restoreGraphicsState()
+        guard let cgImage = ctx.makeImage() else { return nil }
+        let rep = NSBitmapImageRep(cgImage: cgImage)
+        return rep.representation(using: .png, properties: [:])
+    }
 
     let edges: [Edge] = [.top, .bottom, .left, .right]
     let borderDepthMax: CGFloat = 140

@@ -39,9 +39,14 @@ struct PaletteCard: View {
                 .fill(.background)
                 .shadow(color: .black.opacity(0.08), radius: 8, y: 2)
         )
-        .task(id: background.id) {
+        .task(id: renderKey) {
             await generateThumbnail()
         }
+    }
+
+    // Re-render whenever the palette/variation OR the chosen month/year changes.
+    private var renderKey: String {
+        "\(background.id)-\(spec.month)-\(spec.year)"
     }
 
     @MainActor
@@ -56,47 +61,38 @@ struct PaletteCard: View {
     }
 }
 
-/// Gallery tile for importing a user image. Empty state shows an "Add your own"
-/// affordance; once an image is chosen it renders that page and tapping opens it.
-struct AddBackgroundCard: View {
+/// A tile for an imported background image: tap to open, with a delete button.
+struct CustomBackgroundCard: View {
     let spec: CalendarSpec
-    let custom: CustomBackground?
-    let onPicked: (CGImage) -> Void
+    let custom: CustomBackground
     let onOpen: () -> Void
-    let onRemove: () -> Void
+    let onDelete: () -> Void
 
     var body: some View {
-        if let custom {
-            chosenCard(custom)
-        } else {
-            emptyCard
+        Button(action: onOpen) {
+            PaletteCard(spec: spec, background: .custom(custom))
         }
-    }
-
-    @ViewBuilder
-    private func chosenCard(_ custom: CustomBackground) -> some View {
-        VStack(spacing: 0) {
-            Button(action: onOpen) {
-                PaletteCard(spec: spec, background: .custom(custom))
-            }
-            .buttonStyle(.plain)
-
-            picker(label: "Replace image", systemImage: "photo.on.rectangle")
-                .padding(.top, 4)
-        }
+        .buttonStyle(.plain)
         .overlay(alignment: .topTrailing) {
-            Button(action: onRemove) {
-                Label("Remove", systemImage: "xmark.circle.fill")
+            Button(action: onDelete) {
+                Label("Delete background", systemImage: "trash.circle.fill")
             }
             .labelStyle(.iconOnly)
-            .font(.title3)
-            .foregroundStyle(.secondary)
+            .font(.title2)
+            .symbolRenderingMode(.palette)
+            .foregroundStyle(.white, .red)
             .buttonStyle(.plain)
             .padding(14)
         }
     }
+}
 
-    private var emptyCard: some View {
+/// The always-present "Add your own" picker tile. Imports an image and hands
+/// back its CGImage; the gallery owns the list of imported backgrounds.
+struct AddBackgroundCard: View {
+    let onPicked: (CGImage) -> Void
+
+    var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -105,7 +101,7 @@ struct AddBackgroundCard: View {
                     Image(systemName: "photo.badge.plus")
                         .font(.largeTitle)
                         .foregroundStyle(.secondary)
-                    picker(label: "Add your own", systemImage: "plus")
+                    picker
                 }
             }
             .aspectRatio(841.89 / 595.28, contentMode: .fit)
@@ -128,9 +124,9 @@ struct AddBackgroundCard: View {
     @State private var photoItem: PhotosPickerItem?
 
     @ViewBuilder
-    private func picker(label: String, systemImage: String) -> some View {
+    private var picker: some View {
         PhotosPicker(selection: $photoItem, matching: .images) {
-            Label(label, systemImage: systemImage)
+            Label("Add your own", systemImage: "plus")
         }
         .buttonStyle(.bordered)
         .onChange(of: photoItem) { _, newValue in
@@ -140,21 +136,21 @@ struct AddBackgroundCard: View {
     }
 
     private func loadPhoto(_ item: PhotosPickerItem) async {
+        defer { photoItem = nil }
         guard
             let data = try? await item.loadTransferable(type: Data.self),
             let uiImage = UIImage(data: data),
             let cgImage = uiImage.cgImage
         else { return }
         onPicked(cgImage)
-        photoItem = nil
     }
     #else
     @State private var showImporter = false
 
     @ViewBuilder
-    private func picker(label: String, systemImage: String) -> some View {
+    private var picker: some View {
         Button { showImporter = true } label: {
-            Label(label, systemImage: systemImage)
+            Label("Add your own", systemImage: "plus")
         }
         .buttonStyle(.bordered)
         .fileImporter(isPresented: $showImporter, allowedContentTypes: [.image]) { result in

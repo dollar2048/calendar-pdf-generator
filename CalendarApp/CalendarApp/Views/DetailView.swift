@@ -60,14 +60,14 @@ struct DetailView: View {
             .disabled(pdfData == nil)
             #endif
 
-            // Close on the trailing edge per Apple HIG.
+            // Close on the trailing edge per Apple HIG, with a Liquid Glass treatment.
             Button {
                 dismiss()
             } label: {
-                Label("Close", systemImage: "xmark.circle.fill")
+                Label("Close", systemImage: "xmark")
             }
             .labelStyle(.iconOnly)
-            .buttonStyle(.plain)
+            .modifier(GlassCloseButtonStyle())
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 12)
@@ -123,4 +123,20 @@ struct DetailView: View {
         }
     }
     #endif
+}
+
+/// Liquid Glass close button on OS 26+, with a bordered circular fallback
+/// for the iOS 17 / macOS 14 deployment floor.
+private struct GlassCloseButtonStyle: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 26.0, macOS 26.0, *) {
+            content
+                .buttonStyle(.glass)
+                .buttonBorderShape(.circle)
+        } else {
+            content
+                .buttonStyle(.bordered)
+                .buttonBorderShape(.circle)
+        }
+    }
 }

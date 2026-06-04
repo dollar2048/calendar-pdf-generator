@@ -3,7 +3,7 @@ import SwiftUI
 struct GalleryView: View {
     @State private var spec = CalendarSpec.current
     @State private var variation = 0
-    @State private var customBackground: CustomBackground?
+    @State private var customBackgrounds: [CustomBackground] = []
     @State private var selection: CalendarBackground?
     @State private var showDatePopover = false
 
@@ -67,19 +67,20 @@ struct GalleryView: View {
                     .buttonStyle(.plain)
                 }
 
-                AddBackgroundCard(
-                    spec: spec,
-                    custom: customBackground,
-                    onPicked: { cgImage in
-                        let new = CustomBackground(image: cgImage)
-                        customBackground = new
-                        selection = .custom(new)
-                    },
-                    onOpen: {
-                        if let customBackground { selection = .custom(customBackground) }
-                    },
-                    onRemove: { customBackground = nil }
-                )
+                ForEach(customBackgrounds) { custom in
+                    CustomBackgroundCard(
+                        spec: spec,
+                        custom: custom,
+                        onOpen: { selection = .custom(custom) },
+                        onDelete: { customBackgrounds.removeAll { $0.id == custom.id } }
+                    )
+                }
+
+                AddBackgroundCard { cgImage in
+                    let new = CustomBackground(image: cgImage)
+                    customBackgrounds.append(new)
+                    selection = .custom(new)
+                }
             }
             .padding(20)
         }

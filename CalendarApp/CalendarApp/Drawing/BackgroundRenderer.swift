@@ -178,6 +178,85 @@ enum BackgroundRenderer {
     /// Renders the procedural floral border. `variation` re-rolls the layout:
     /// variation 0 reproduces the original fixed arrangement for each palette,
     /// higher values shuffle stems/flowers/berries while keeping the palette colors.
+    // MARK: - Winter snow scene
+
+    private static func drawSnowflake(at p: CGPoint, radius: CGFloat, rotation: CGFloat, color: UColor, in ctx: CGContext) {
+        ctx.saveGState()
+        ctx.translateBy(x: p.x, y: p.y)
+        ctx.rotate(by: rotation)
+        ctx.setStrokeColor(color.cgColor)
+        ctx.setLineWidth(max(1.1, radius * 0.10))
+        ctx.setLineCap(.round)
+
+        for i in 0..<6 {
+            let a = CGFloat(i) * .pi / 3
+            let tip = CGPoint(x: cos(a) * radius, y: sin(a) * radius)
+            ctx.move(to: .zero)
+            ctx.addLine(to: tip)
+
+            let b1 = a + .pi / 6
+            let b2 = a - .pi / 6
+            // Inner pair of branches.
+            let inner = CGPoint(x: cos(a) * radius * 0.55, y: sin(a) * radius * 0.55)
+            let innerLen = radius * 0.32
+            ctx.move(to: inner)
+            ctx.addLine(to: CGPoint(x: inner.x + cos(b1) * innerLen, y: inner.y + sin(b1) * innerLen))
+            ctx.move(to: inner)
+            ctx.addLine(to: CGPoint(x: inner.x + cos(b2) * innerLen, y: inner.y + sin(b2) * innerLen))
+            // Outer pair of branches.
+            let outer = CGPoint(x: cos(a) * radius * 0.8, y: sin(a) * radius * 0.8)
+            let outerLen = radius * 0.22
+            ctx.move(to: outer)
+            ctx.addLine(to: CGPoint(x: outer.x + cos(b1) * outerLen, y: outer.y + sin(b1) * outerLen))
+            ctx.move(to: outer)
+            ctx.addLine(to: CGPoint(x: outer.x + cos(b2) * outerLen, y: outer.y + sin(b2) * outerLen))
+        }
+        ctx.strokePath()
+
+        let centerR = radius * 0.13
+        ctx.setFillColor(color.cgColor)
+        ctx.fillEllipse(in: CGRect(x: -centerR, y: -centerR, width: centerR * 2, height: centerR * 2))
+        ctx.restoreGState()
+    }
+
+    private static func renderSnow(palette: Palette, into ctx: CGContext, rect: CGRect, rng: inout SeededRNG) {
+        // Pale icy wash so white snow reads; the opaque grid covers the center.
+        ctx.setFillColor(UColor.rgb255(226, 238, 248).cgColor)
+        ctx.fill(rect)
+
+        let flakeColors = palette.flowerColors + palette.accentColors
+        let edges: [Edge] = [.top, .bottom, .left, .right]
+        let borderDepthMax: CGFloat = 155
+
+        // Crystalline snowflakes clustered along the borders.
+        for edge in edges {
+            let count = Int(randRange(&rng, 14, 22))
+            for _ in 0..<count {
+                let t = randUnit(&rng)
+                let depth = randRange(&rng, 10, borderDepthMax)
+                let pos = placeOnBorder(edge: edge, t: t, depth: depth)
+                drawSnowflake(
+                    at: pos,
+                    radius: randRange(&rng, 9, 26),
+                    rotation: randRange(&rng, 0, .pi),
+                    color: pick(flakeColors, &rng),
+                    in: ctx
+                )
+            }
+        }
+
+        // Fine falling snow scattered across the whole page.
+        let dots = 320
+        for _ in 0..<dots {
+            let x = randRange(&rng, 0, pageWidth)
+            let y = randRange(&rng, 0, pageHeight)
+            let r = randRange(&rng, 0.8, 2.8)
+            let alpha = randRange(&rng, 0.55, 1.0)
+            ctx.setFillColor(UColor(white: 1, alpha: alpha).cgColor)
+            ctx.fillEllipse(in: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2))
+        }
+    }
+
     static func render(palette: Palette, variation: Int = 0, into ctx: CGContext, rect: CGRect) {
         let baseSeed = UInt64(abs(palette.id.hashValue)) | 1
         let seed = baseSeed &+ UInt64(bitPattern: Int64(variation)) &* 7919
@@ -187,6 +266,12 @@ enum BackgroundRenderer {
         ctx.setFillColor(UColor.white.cgColor)
         ctx.fill(rect)
         ctx.restoreGState()
+
+        // Winter is a snow scene rather than a floral border.
+        if palette.id == "winter" {
+            renderSnow(palette: palette, into: ctx, rect: rect, rng: &rng)
+            return
+        }
 
         let edges: [Edge] = [.top, .bottom, .left, .right]
         let borderDepthMax: CGFloat = 140
