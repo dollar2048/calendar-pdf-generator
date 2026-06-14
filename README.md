@@ -42,6 +42,8 @@ Procedurally generated background borders (the calendar grid is overlaid on top 
 
 ## Mac / iOS app
 
+[**TestFlight Link**](https://testflight.apple.com/join/yw3r3Pkn)
+
 A multiplatform SwiftUI app that wraps these scripts lives in [`CalendarApp/`](CalendarApp/). Bundle id `dollar2048.calendar-generator`. Requires macOS 14 / iOS 17 or later.
 
 App features:
